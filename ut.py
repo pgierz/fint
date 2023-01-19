@@ -48,24 +48,24 @@ def compute_face_coords(x2, y2, elem):
 
 
 def get_company_name(variable_name):
-    vector_vars = {}
-    vector_vars["u"] = ["u", "v"]
-    vector_vars["v"] = ["u", "v"]
-    vector_vars["uice"] = ["uice", "vice"]
-    vector_vars["vice"] = ["uice", "vice"]
-    vector_vars["unod"] = ["unod", "vnod"]
-    vector_vars["vnod"] = ["unod", "vnod"]
-    vector_vars["tau_x"] = ["tau_x", "tau_y"]
-    vector_vars["tau_y"] = ["tau_x", "tau_y"]
-    vector_vars["atmice_x"] = ["atmice_x", "atmice_y"]
-    vector_vars["atmice_y"] = ["atmice_x", "atmice_x"]
-    vector_vars["atmoce_x"] = ["atmoce_x", "atmoce_y"]
-    vector_vars["atmoce_y"] = ["atmoce_x", "atmoce_y"]
-    vector_vars["iceoce_x"] = ["iceoce_x", "iceoce_y"]
-    vector_vars["iceoce_y"] = ["iceoce_x", "iceoce_y"]
-    vector_vars["tx_sur"] = ["tx_sur", "ty_sur"]
-    vector_vars["ty_sur"] = ["tx_sur", "ty_sur"]
-
+    vector_vars = {
+        "u": ["u", "v"],
+        "v": ["u", "v"],
+        "uice": ["uice", "vice"],
+        "vice": ["uice", "vice"],
+        "unod": ["unod", "vnod"],
+        "vnod": ["unod", "vnod"],
+        "tau_x": ["tau_x", "tau_y"],
+        "tau_y": ["tau_x", "tau_y"],
+        "atmice_x": ["atmice_x", "atmice_y"],
+        "atmice_y": ["atmice_x", "atmice_x"],
+        "atmoce_x": ["atmoce_x", "atmoce_y"],
+        "atmoce_y": ["atmoce_x", "atmoce_y"],
+        "iceoce_x": ["iceoce_x", "iceoce_y"],
+        "iceoce_y": ["iceoce_x", "iceoce_y"],
+        "tx_sur": ["tx_sur", "ty_sur"],
+        "ty_sur": ["tx_sur", "ty_sur"],
+    }
     return vector_vars[variable_name]
 
 
@@ -132,8 +132,7 @@ def scalar_g2r(al, be, ga, lon, lat):
     rlat = np.arcsin(zg)
     rlon = np.arctan2(yg, xg)
 
-    a = np.where((np.abs(xg) + np.abs(yg)) == 0)
-    if a:
+    if a := np.where((np.abs(xg) + np.abs(yg)) == 0):
         lon[a] = 0
 
     rlat = rlat / rad
@@ -203,8 +202,7 @@ def scalar_r2g(al, be, ga, rlon, rlat):
     lat = np.arcsin(zg)
     lon = np.arctan2(yg, xg)
 
-    a = np.where((np.abs(xg) + np.abs(yg)) == 0)
-    if a:
+    if a := np.where((np.abs(xg) + np.abs(yg)) == 0):
         lon[a] = 0
 
     lat = lat / rad

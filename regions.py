@@ -45,16 +45,11 @@ def define_region_from_file(file):
 
 
 def define_region(box, res, projection=None):
-    if not projection is None:
+    if projection is not None:
         x, y, lon, lat = region_cartopy(box, res, projection)
-    # box_type = parse_box(box)
     elif len(box.split(",")) > 1:
         left, right, down, up = list(map(float, box.split(",")))
-        if not res is None:
-            lonNumber, latNumber = res
-        else:
-            lonNumber, latNumber = 360, 170
-
+        lonNumber, latNumber = res if res is not None else (360, 170)
         x = np.linspace(left, right, lonNumber)
         y = np.linspace(down, up, latNumber)
 
@@ -74,10 +69,7 @@ def define_region(box, res, projection=None):
 
 
 def region_gs(res):
-    if not res is None:
-        lonNumber, latNumber = res
-    else:
-        lonNumber, latNumber = 300, 250
+    lonNumber, latNumber = res if res is not None else (300, 250)
     left = -80
     right = -30
     bottom = 20
@@ -90,10 +82,7 @@ def region_gs(res):
 
 
 def region_trop(res):
-    if not res is None:
-        lonNumber, latNumber = res
-    else:
-        lonNumber, latNumber = 751, 400
+    lonNumber, latNumber = res if res is not None else (751, 400)
     left = -60
     right = 15
     bottom = -9.95
@@ -106,10 +95,7 @@ def region_trop(res):
 
 
 def region_arctic(res):
-    if not res is None:
-        lonNumber, latNumber = res
-    else:
-        lonNumber, latNumber = 500, 500
+    lonNumber, latNumber = res if res is not None else (500, 500)
     left = -180
     right = 180
     bottom = 60
@@ -122,10 +108,7 @@ def region_arctic(res):
 
 
 def region_gulf(res):
-    if not res is None:
-        lonNumber, latNumber = res
-    else:
-        lonNumber, latNumber = 1000, 500
+    lonNumber, latNumber = res if res is not None else (1000, 500)
     left = -80
     right = -30
     bottom = 20
@@ -145,10 +128,7 @@ def region_cartopy(box, res, projection="mer"):
     elif projection == "sp":
         projection_ccrs = ccrs.SouthPolarStereo()
 
-    if not res is None:
-        lonNumber, latNumber = res
-    else:
-        lonNumber, latNumber = 500, 500
+    lonNumber, latNumber = res if res is not None else (500, 500)
     left, right, down, up = list(map(float, box.split(",")))
     print(left, right, down, up)
     # left = -80
@@ -208,7 +188,7 @@ def mask_ne(lonreg2, latreg2):
         2D mask with True where the ocean is.
     """
     nearth = cfeature.NaturalEarthFeature("physical", "ocean", "50m")
-    main_geom = [contour for contour in nearth.geometries()][0]
+    main_geom = list(nearth.geometries())[0]
 
     mask = shapely.vectorized.contains(main_geom, lonreg2, latreg2)
     m2 = np.where(((lonreg2 == -180.0) & (latreg2 > 71.5)), True, mask)

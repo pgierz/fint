@@ -82,8 +82,7 @@ def ind_for_depth(depth, depths_from_file):
     """
     arr = [abs(abs(z) - abs(depth)) for z in depths_from_file]
     v, i = min((v, i) for (i, v) in enumerate(arr))
-    dind = i
-    return dind
+    return i
 
 
 def load_mesh(mesh_path):
@@ -152,16 +151,14 @@ def mask_triangulation(data_in, triang2, elem, no_cyclic_elem):
 def interpolate_triangulation(
     data_in, triang2, trifinder, x2, y2, lon2, lat2, elem, no_cyclic_elem
 ):
-    interpolated = mtri.LinearTriInterpolator(triang2, data_in, trifinder=trifinder)(
+    return mtri.LinearTriInterpolator(triang2, data_in, trifinder=trifinder)(
         lon2, lat2
     )
-    return interpolated
 
 
 def interpolate_linear_scipy(data_in, x2, y2, lon2, lat2):
     points = np.vstack((x2, y2)).T
-    interpolated = LinearNDInterpolator(points, data_in)(lon2, lat2)
-    return interpolated
+    return LinearNDInterpolator(points, data_in)(lon2, lat2)
 
 
 def parse_depths(depths, depths_from_file):
@@ -214,15 +211,13 @@ def parse_timesteps(timesteps, time_shape):
     else:
         y = [int(timesteps)]
     timesteps = y
-    print("timesteps {}".format(timesteps))
+    print(f"timesteps {timesteps}")
     return timesteps
 
 def parse_timedelta(timedelta_arg):
     timedelta_val = timedelta_arg[:-1]
     timedelta_unit = timedelta_arg[-1:]
-    timedelta = np.timedelta64(timedelta_val, timedelta_unit)
-
-    return timedelta
+    return np.timedelta64(timedelta_val, timedelta_unit)
 
 def save_data(data, args, timesteps, variable_name, interpolated3d, realdepths, x, y, lon, lat, out_path):
     attributes = update_attrs(data.attrs, args)
@@ -470,9 +465,7 @@ def fint(args=None):
         depth_coord = dim_names[0]
         depths_from_file = data[depth_coord].values
         dinds, realdepths = parse_depths(args.depths, depths_from_file)
-        if (data[variable_name].dims[1] == "nz") or (
-            data[variable_name].dims[1] == "nz1"
-        ):
+        if data[variable_name].dims[1] in ["nz", "nz1"]:
             dimension_order = "normal"
         else:
             dimension_order = "transpose"
@@ -583,7 +576,12 @@ def fint(args=None):
                     y2,
                 )
 
-            if interpolation == "mtri_linear":
+            if interpolation == "linear_scipy":
+                interpolated = interpolate_linear_scipy(data_in, x2, y2, lon, lat)
+                if args.rotate:
+                    interpolated2 = interpolate_linear_scipy(data_in2, x2, y2, lon, lat)
+
+            elif interpolation == "mtri_linear":
                 # we don't use shapely mask with this method
                 args.no_shape_mask = True
                 if mask_file is None:
@@ -633,11 +631,6 @@ def fint(args=None):
                         radius_of_influence=radius_of_influence,
                         mask_zero=args.no_mask_zero,
                     )
-            elif interpolation == "linear_scipy":
-                interpolated = interpolate_linear_scipy(data_in, x2, y2, lon, lat)
-                if args.rotate:
-                    interpolated2 = interpolate_linear_scipy(data_in2, x2, y2, lon, lat)
-
             # masking of the data
             if mask_file is not None:
                 mask_level = mask_data[0, dind, :, :].values
@@ -659,7 +652,7 @@ def fint(args=None):
                 interpolated3d[t_index, d_index, :, :] = interpolated
                 if args.rotate:
                     interpolated3d2[t_index, d_index, :, :] = interpolated2
-        
+
         if args.oneout:
             out_path_one = out_path.replace('.nc', f'_{str(t_index).zfill(10)}.nc')
             save_data(data, args, [ttime], variable_name, interpolated3d, realdepths, x, y, lon, lat, out_path_one)
